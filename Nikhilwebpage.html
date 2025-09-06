@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TBD - Trading Setups</title>
+<style>
+/* Background */
+body, html {
+  margin: 0; padding: 0; min-height: 100%;
+  background: #ffffff; /* White base */
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  color: #1a1a1a;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Soft maroon glow accents (subtle, white-dominant) */
+body::before {
+  content: "";
+  position: fixed;
+  top: -10vh;
+  left: -20vw;
+  width: 80vw;
+  height: 200vh;
+  background: radial-gradient(circle at 30% 40%, rgba(128,0,0,0.18), transparent 70%);
+  filter: blur(140px);
+  pointer-events: none;
+  z-index: 0;
+}
+body::after {
+  content: "";
+  position: fixed;
+  bottom: -10vh;
+  right: -20vw;
+  width: 70vw;
+  height: 150vh;
+  background: radial-gradient(circle at 60% 70%, rgba(128,0,0,0.12), transparent 80%);
+  filter: blur(130px);
+  pointer-events: none;
+  z-index: 0;
+}
+body::before, body::after { mix-blend-mode: multiply; }
+
+/* Navbar - fixed, with logo on left, centered nav, auth on right */
+.navbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 70px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 4%;
+  background: transparent;
+  z-index: 20;
+  box-sizing: border-box;
+}
+
+/* Left side (logo) */
+.nav-left {
+  display: flex;
+  align-items: center;
+}
+.nav-left .logo {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #800000;
+  white-space: nowrap;
+}
+
+/* Center navigation links */
+.nav-center {
+  display: flex;
+  align-items: center;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.nav-center .links {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+}
+.nav-center .links a {
+  text-decoration: none;
+  font-size: 0.95rem;
+  color: #333;
+  transition: color 0.18s;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.nav-center .links a:hover { color: #800000; }
+
+/* Right side (auth) */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Buttons */
+.btn {
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+  box-sizing: border-box;
+}
+.btn-outline {
+  background: white;
+  border: 1.5px solid #800000;
+  color: #800000;
+}
+.btn-outline:hover {
+  background: rgba(128,0,0,0.08);
+  color: #800000;
+}
+.btn-solid {
+  background: linear-gradient(135deg, #800000, #800000);
+  color: white;
+  border: 1.5px solid rgba(0,0,0,0.05);
+}
+.btn-solid:hover { opacity: 0.95; }
+
+/* Sections */
+section {
+  display: none;
+  text-align: center;
+  margin-top: 110px; /* leave space for fixed navbar */
+  padding: 40px 20px;
+  z-index: 5;
+  position: relative;
+  animation: fadeIn 0.36s ease-in-out;
+}
+section.active { display: block; }
+
+/* Hero */
+.hero h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1.05;
+  margin: 0;
+}
+.hero h1 span { color: #800000; }
+.hero p {
+  max-width: 650px;
+  margin: 18px auto 36px;
+  font-size: 1rem;
+  color: #555;
+}
+
+/* Section Buttons */
+.section-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.section-buttons .btn { min-width: 150px; }
+
+/* Forms */
+.form-box {
+  background: white;
+  padding: 36px;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(128, 0, 0, 0.08);
+  max-width: 420px;
+  margin: 24px auto;
+  text-align: left;
+}
+.form-box h2 { text-align: center; margin-bottom: 18px; color: #800000; }
+.form-box label { display:block; margin-bottom:6px; font-size:0.92rem; }
+.form-box input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 14px;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+.form-box input:focus {
+  outline: none;
+  border-color: #800000;
+  box-shadow: 0 0 8px rgba(128,0,0,0.08);
+}
+.form-box button { width: 100%; padding: 12px; }
+
+/* Team triangular layout (Who are we?) */
+.team {
+  max-width: 1000px;
+  margin: 8px auto 40px;
+  padding: 20px;
+}
+.triangle {
+  position: relative;
+  width: min(820px, 92%);
+  height: 420px;
+  margin: 18px auto 0;
+}
+.member-wrapper {
+  position: absolute;
+  width: 220px; /* wrapper width (avatar + caption) */
+  text-align: center;
+  transform: translateY(0);
+}
+.member-wrapper .avatar {
+  width: 160px;
+  height: 160px;
+  margin: 0 auto;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 12px 30px rgba(128,0,0,0.12);
+  border: 6px solid rgba(255,255,255,0.85);
+  background: #fff;
+}
+.member-wrapper .avatar img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+.member-wrapper .caption {
+  margin-top: 10px;
+  color: #333;
+  font-weight: 600;
+}
+.member-wrapper .role {
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+/* positions: top center, bottom-left, bottom-right */
+.member-wrapper.top {
+  left: 50%;
+  top: 0;
+  transform: translate(-50%, 0);
+}
+.member-wrapper.left {
+  left: 6%;
+  bottom: 0;
+}
+.member-wrapper.right {
+  right: 6%;
+  bottom: 0;
+}
+
+/* Responsive tweaks */
+@media (max-width: 880px) {
+  .triangle { height: 520px; }
+  .member-wrapper { width: 190px; }
+  .member-wrapper .avatar { width: 140px; height: 140px; }
+  .member-wrapper.left { left: 8%; bottom: 0; }
+  .member-wrapper.right { right: 8%; bottom: 0; }
+}
+@media (max-width: 768px) {
+  .nav-center {
+    position: static;
+    transform: none;
+    margin: 0 auto;
+  }
+  .navbar {
+    flex-direction: column;
+    height: auto;
+    padding: 10px;
+  }
+  .nav-left, .nav-center, .nav-right {
+    margin: 5px 0;
+  }
+  section {
+    margin-top: 150px;
+  }
+}
+@media (max-width: 520px) {
+  .nav-center .links { 
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+  }
+  .member-wrapper { position: relative; width: 100%; margin-bottom: 20px; left: 0 !important; right: 0 !important; transform: none !important; }
+  .triangle { height: auto; padding-bottom: 12px; }
+  section { margin-top: 180px; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>
+</head>
+<body>
+
+  <!-- Navbar (left: logo, center: links, right: auth area) -->
+  <div class="navbar">
+    <!-- Left side: logo -->
+    <div class="nav-left">
+      <div class="logo">Nikhil's Logo</div>
+    </div>
+
+    <!-- Center: navigation links -->
+    <div class="nav-center">
+      <div class="links">
+        <a onclick="showSection('home')">Home</a>
+        <a onclick="showSection('about')">Who are we?</a>
+        <a onclick="showSection('join')">Want to join?</a>
+        <a onclick="showSection('contact')">Contact Us</a>
+        <a onclick="showSection('faq')">FAQ</a>
+        <a onclick="showSection('blog')">Blog</a>
+      </div>
+    </div>
+
+    <!-- Right side: auth -->
+    <div class="nav-right" id="auth-section">
+      <!-- JS will populate this area (Sign In / Sign Up or Welcome + Sign Out) -->
+    </div>
+  </div>
+
+  <!-- Home Section -->
+  <section id="home" class="hero active">
+    <h1>TBD <br><span>TBD</span></h1>
+    <p>We are ready to join and serve our community (TBD).</p>
+    <div class="section-buttons">
+      <button class="btn btn-solid">Get Started</button>
+      <button class="btn btn-outline">Learn More</button>
+    </div>
+  </section>
+
+  <!-- About (Who are we?) - includes triangular 3 pfp display -->
+  <section id="about">
+    <h2>Who are we?</h2>
+    <p>Meet the founder and co-founders behind our mission.</p>
+
+    <div class="team">
+      <div class="triangle">
+        <!-- Top (Founder) -->
+        <div class="member-wrapper top">
+          <div class="avatar">
+            <!-- Replace these placeholder src values with your real pfp URLs -->
+            <img src="c:\Users\rajit\OneDrive\Pictures\Screenshots\Screenshot 2025-09-06 190556.png" alt="Founder - Nikhil Kumar">
+          </div>
+          <div class="caption">Nikhil Kumar</div>
+          <div class="role">Founder</div>
+        </div>
+
+        <!-- Bottom-left (Co-founder) -->
+        <div class="member-wrapper left">
+          <div class="avatar">
+            <img src="https://via.placeholder.com/300/ffffff/800000?text=TBD" alt="Co-founder - TBD">
+          </div>
+          <div class="caption">TBD</div>
+          <div class="role">Co-founder</div>
+        </div>
+
+        <!-- Bottom-right (Co-founder) -->
+        <div class="member-wrapper right">
+          <div class="avatar">
+            <img src="https://via.placeholder.com/300/ffffff/800000?text=TBD" alt="Co-founder - TBD">
+          </div>
+          <div class="caption">TBD</div>
+          <div class="role">Co-founder</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Join -->
+  <section id="join"><h2>Want to Join?</h2><p>Join us content...</p></section>
+
+  <!-- Contact -->
+  <section id="contact"><h2>Contact Us</h2><p>Contact details...</p></section>
+
+  <!-- FAQ -->
+  <section id="faq"><h2>FAQ</h2><p>FAQ content...</p></section>
+
+  <!-- Blog -->
+  <section id="blog"><h2>Blog</h2><p>Blog posts...</p></section>
+
+  <!-- Sign In Section -->
+  <section id="signin">
+    <div class="form-box">
+      <h2>Sign In</h2>
+      <form id="signinForm">
+        <label>Email</label>
+        <input type="email" id="signinEmail" placeholder="Enter your email" required>
+        <label>Password</label>
+        <input type="password" id="signinPassword" placeholder="Enter your password" required>
+        <button type="submit" class="btn btn-solid">Sign In</button>
+      </form>
+      <p>Don't have an account? <a onclick="showSection('signup')">Sign Up</a></p>
+    </div>
+  </section>
+
+  <!-- Sign Up Section -->
+  <section id="signup">
+    <div class="form-box">
+      <h2>Create Account</h2>
+      <form id="signupForm">
+        <label>Full Name</label>
+        <input type="text" id="signupName" placeholder="Enter your name" required>
+        <label>Email</label>
+        <input type="email" id="signupEmail" placeholder="Enter your email" required>
+        <label>Password</label>
+        <input type="password" id="signupPassword" placeholder="Create a password" required>
+        <button type="submit" class="btn btn-solid">Sign Up</button>
+      </form>
+      <p>Already have an account? <a onclick="showSection('signin')">Sign In</a></p>
+    </div>
+  </section>
+
+<script>
+/* Utility to escape text inserted into HTML (prevent XSS) */
+function escapeHtml(unsafe) {
+  return String(unsafe)
+    .replaceAll('&','&amp;')
+    .replaceAll('<','&lt;')
+    .replaceAll('>','&gt;')
+    .replaceAll('"','&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+/* Manage sections */
+function showSection(id) {
+  document.querySelectorAll("section").forEach(sec => sec.classList.remove("active"));
+  const el = document.getElementById(id);
+  if (el) el.classList.add("active");
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* AUTH UI helpers */
+const authSection = document.getElementById('auth-section');
+
+function setLoggedOutUI() {
+  authSection.innerHTML = `
+    <button class="btn btn-outline" id="navSignIn">Sign In</button>
+    <button class="btn btn-solid" id="navSignUp">Sign Up</button>
+  `;
+  document.getElementById('navSignIn').addEventListener('click', () => showSection('signin'));
+  document.getElementById('navSignUp').addEventListener('click', () => showSection('signup'));
+}
+
+function setLoggedInUI(user) {
+  const safeName = escapeHtml(user.name.split(' ')[0] || user.name);
+  authSection.innerHTML = `
+    <span id="welcomeText" style="font-weight:500;color:#333;margin-right:8px;">Welcome, ${safeName}</span>
+    <button class="btn btn-outline" id="signOutBtn">Sign Out</button>
+  `;
+  document.getElementById('signOutBtn').addEventListener('click', signOut);
+}
+
+/* Initialize UI */
+(function initAuthUI() {
+  // if you want to persist a current user between reloads, check localStorage here
+  setLoggedOutUI();
+})();
+
+/* Sign Up logic */
+document.getElementById("signupForm").addEventListener("submit", function(e){
+  e.preventDefault();
+  const name = document.getElementById("signupName").value.trim();
+  const email = document.getElementById("signupEmail").value.trim().toLowerCase();
+  const password = document.getElementById("signupPassword").value;
+
+  let users = JSON.parse(localStorage.getItem("users")) || [];
+
+  // Check if email already exists
+  if (users.some(user => user.email === email)) {
+    alert("This email has already signed up!");
+    return;
+  }
+
+  users.push({ name, email, password });
+  localStorage.setItem("users", JSON.stringify(users));
+  alert("Account created successfully!");
+  showSection("signin");
+});
+
+/* Sign In logic */
+document.getElementById("signinForm").addEventListener("submit", function(e){
+  e.preventDefault();
+  const email = document.getElementById("signinEmail").value.trim().toLowerCase();
+  const password = document.getElementById("signinPassword").value;
+  const users = JSON.parse(localStorage.getItem("users")) || [];
+
+  const user = users.find(u => u.email === email && u.password === password);
+
+  if (user) {
+    // show logged-in UI on navbar
+    setLoggedInUI(user);
+    // optionally store current user so UI persists across reloads (commented out by default)
+    // localStorage.setItem('currentUser', JSON.stringify(user));
+    showSection("home");
+  } else {
+    alert("Invalid credentials!");
+  }
+});
+
+/* Sign Out */
+function signOut(){
+  // remove any persisted current user if you set one
+  // localStorage.removeItem('currentUser');
+  setLoggedOutUI();
+  showSection("home");
+}
+</script>
+</body>
+</html>
